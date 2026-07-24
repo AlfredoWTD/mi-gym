@@ -1,12 +1,138 @@
 // ---------- Estado y persistencia (localStorage) ----------
 const STORE_KEY = 'migym_data_v1';
 
+// ---------- Medidas: histórico inicial (evaluaciones del nutricionista) ----------
+let _seedCounter = 0;
+function uidSeed(){ _seedCounter++; return 'seed'+_seedCounter; }
+const MEDIDAS_SEED = [
+  { fecha:'2025-10-04', peso:91.3, talla:178.4, brazoRelajado:38.5, brazoFlexionado:39.3, antebrazo:28.6,
+    torax:113, cintura:90.5, cadera:103.5, musloMedio:60.2, pantorrilla:36,
+    plTriceps:10.5, plSubescapula:26.5, plSupraespinal:17.5, plAbdominal:29, plMuslo:7.5, plPantorrilla:9.5,
+    pctGrasa:13.15, kgGrasa:12.00, pctMusculo:42.67, kgMusculo:38.96 },
+  { fecha:'2025-12-08', peso:90.7, talla:178.4, brazoRelajado:38, brazoFlexionado:39, antebrazo:28.3,
+    torax:111, cintura:93, cadera:103, musloMedio:60.2, pantorrilla:36.1,
+    plTriceps:10.5, plSubescapula:23, plSupraespinal:16.5, plAbdominal:28, plMuslo:7.5, plPantorrilla:8.5,
+    pctGrasa:12.46, kgGrasa:11.31, pctMusculo:42.67, kgMusculo:38.70 },
+  { fecha:'2026-05-23', peso:85.4, talla:178.4, brazoRelajado:36.5, brazoFlexionado:37.6, antebrazo:27.7,
+    torax:111, cintura:86, cadera:99, musloMedio:59, pantorrilla:35.2,
+    plTriceps:7, plSubescapula:18, plSupraespinal:14, plAbdominal:25, plMuslo:6.5, plPantorrilla:6.5,
+    pctGrasa:10.68, kgGrasa:9.12, pctMusculo:44.51, kgMusculo:38.01 },
+  { fecha:'2026-06-27', peso:84.1, talla:178.4, brazoRelajado:36.7, brazoFlexionado:37.8, antebrazo:27.7,
+    torax:107.2, cintura:86, cadera:99.2, musloMedio:58.7, pantorrilla:35.2,
+    plTriceps:6.5, plSubescapula:16.5, plSupraespinal:12.5, plAbdominal:24.5, plMuslo:6, plPantorrilla:6,
+    pctGrasa:10.15, kgGrasa:8.54, pctMusculo:45.65, kgMusculo:38.39 }
+].map(m=>({...m, id: uidSeed()}));
+
+// ---------- Dieta: plan de referencia (versión actual del nutricionista) ----------
+const DIETA_DESAYUNO = [
+  "1 taza de jugo de frutas c/ ½ cucharita de canela en polvo + 2 tajadas de pan de molde integral o 1 pan francés o ciabatta + 4 huevos cocidos o a la plancha (4 claras + 2 yemas)",
+  "1 taza de café + 2 tajadas de pan de molde integral BIMBO naranja o 1 pan francés o Ciabatta + 2 cucharas de mermelada + 1 lata de conserva de pescado",
+  "2 tazas de KEFIR + 1 mandarina + 1 plátano en pedazos + ½ scoop de proteína Ó 3 panqueques (mitad de preparación indicada)",
+  "1 taza de avena (25g en crudo) c/ ½ cucharita de canela en polvo + 2 tajadas de pan de molde integral o 1 pan francés o ciabatta + 4 huevos cocidos o a la plancha (4 claras + 2 yemas) + 1 lata de conserva de pescado",
+  "1 taza de café (endulzado con edulcorante) + 2 tajadas de pan de molde integral o 1 pan francés o Ciabatta + 2 cucharas de mermelada + 100g de queso descremado “Sbelt” de Laive",
+  "1 taza de café + 4 tajadas de pan de molde integral + 1 lata de conserva de pescado o 4 huevos cocidos o a la plancha (4 claras + 2 yemas)"
+];
+const DIETA_ALMUERZO = [
+  "200g de pollo + 1 papa sancochada pequeña (100g) + ½ taza de arroz integral cocido (80g) + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva + Refresco natural o agua",
+  "200g de pollo o 200g de res + ½ taza de arroz integral (80g) + ½ taza de menestra (80g) + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva + Refresco natural o agua",
+  "½ taza de guiso (cau-cau o picante, etc) (80g) + ½ taza de arroz integral cocido (80g) + 200g de cárnico (pollo, res, pescado, pavita o cerdo) + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva + Refresco natural o agua",
+  "Tallarín en salsa de tomate: 1 taza (180g) de tallarín sancochado integral + salsa de tomate + 200g de pulpa de carne de res o pollo + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva + Refresco natural o agua",
+  "1 filete de carne o pescado a la plancha o a la parrilla (200g en crudo, no empanizado) + 1 taza de arroz integral cocido (160g) + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva + Refresco natural o agua",
+  "1 papa sancochada (100g) o 1 camote sancochado (100g) + ½ taza de arroz integral cocido (80g) + 200g de pescado en cebiche o a la plancha o carne de pollo o carne a la parrilla (200g) + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva"
+];
+const DIETA_POST_9PM = [
+  "1 scoop de proteína + 1 plátano",
+  "1 scoop de proteína + 2 mandarinas",
+  "1 scoop de proteína + 1 mandarina + 1 manzana",
+  "1 scoop de proteína + 1 tajada de pan de molde integral + 1 cucharada de mermelada",
+  "1 scoop de proteína + ½ paquete de galleta SODA",
+  "1 scoop de proteína + 1 pera + 1 manzana"
+];
+const DIETA_CENA = [
+  "200g de pollo + 1 papa sancochada pequeña (100g) o ½ taza de arroz integral cocido (80g) + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva + Refresco natural o agua Ó 3 rapiditas + 200g de pollo a la plancha + Refresco natural o agua",
+  "200g de pollo o 200g de res + ½ taza de arroz integral (80g) o ½ taza de menestra (80g) + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva + Refresco natural o agua Ó 3 tajadas de pan de molde integral + 200g de pollo a la plancha",
+  "½ taza de guiso (cau-cau o picante, etc) (80g) o ½ taza de arroz integral cocido (80g) + 200g de cárnico (pollo, res, pescado, pavita o cerdo) + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva + Refresco natural o agua",
+  "Tallarín en salsa de tomate: ½ taza (80g) de tallarín sancochado integral + salsa de tomate + 200g de pulpa de carne de res o pollo + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva + Refresco natural o agua",
+  "1 lata de atún + 1 papa sancochada pequeña (100g) o ½ taza de arroz integral cocido (80g) + 2 tazas de ensalada de verduras frescas o 1 taza de verduras cocidas + zumo de limón + 1 cucharita de aceite de oliva + Refresco natural o agua",
+  "Pollo a la brasa: 1 presa pecho o 2 piernas + ½ porción de papas fritas + ensalada sin cremas"
+];
+const DIETA_MEDIA_TARDE_ENTRENO = [
+  "2 peras + 1 plátano Ó 2 panqueques",
+  "1 paquete de galleta SODA + 1 cuchara de mermelada",
+  "1 plátano + 2 mandarinas",
+  "2 tajadas de pan de molde integral + 2 cucharadas de mermelada",
+  "2 mandarinas + 1 plátano",
+  "2 manzanas + 1 plátano"
+];
+
+const DIETA = {
+  version: 4,
+  escenarios: [
+    { id:'entreno_tarde', nombre:'Días con entreno por la tarde', kcal:1800, comidas:[
+      { nombre:'Desayuno (8am)', opciones: DIETA_DESAYUNO },
+      { nombre:'Almuerzo (12:30-1pm)', opciones: DIETA_ALMUERZO },
+      { nombre:'Media tarde (5-6pm)', opciones: DIETA_MEDIA_TARDE_ENTRENO },
+      { nombre:'Post entreno (9pm)', opciones: DIETA_POST_9PM },
+      { nombre:'Cena (9:30-10pm)', opciones: DIETA_CENA }
+    ]},
+    { id:'entreno_manana', nombre:'Días con entreno por la mañana', kcal:1800, comidas:[
+      { nombre:'Al despertar', opciones: ["2 mandarinas","1 plátano","1 tajada de pan de molde + 1 cuchara de mermelada","1 manzana + 1 pera","1 mandarina + 1 pera","1 mandarina + 1 melocotón"] },
+      { nombre:'Post entreno (inmediato)', opciones: ["1 scoop de proteína"] },
+      { nombre:'Desayuno (8am)', opciones: DIETA_DESAYUNO },
+      { nombre:'Almuerzo (12:30-1pm)', opciones: DIETA_ALMUERZO },
+      { nombre:'Media tarde (5-6pm)', opciones: DIETA_MEDIA_TARDE_ENTRENO },
+      { nombre:'Post entreno (9pm)', opciones: DIETA_POST_9PM },
+      { nombre:'Cena (9:30-10pm)', opciones: DIETA_CENA }
+    ]},
+    { id:'sin_entreno', nombre:'Días sin entreno', kcal:1650, comidas:[
+      { nombre:'Desayuno (8am)', opciones: DIETA_DESAYUNO },
+      { nombre:'Almuerzo (1-2pm)', opciones: DIETA_ALMUERZO },
+      { nombre:'Media tarde (5-5:30pm)', opciones: [
+        "1 tajada de pan de molde + 1 cucharita de mermelada normal + 1 scoop de proteína",
+        "1 PRO DE GLORIA Ó 2 panqueques + ½ scoop de proteína",
+        "2 tajadas de piña (200g) + 2 vasos de KEFIR + ½ scoop de proteína",
+        "1 plátano + 1 scoop de proteína",
+        "2 mandarinas + 2 vasos de KEFIR + ½ scoop de proteína",
+        "1 manzana + 1 mandarina + 1 scoop de proteína"
+      ]},
+      { nombre:'Cena (7-8pm)', opciones: DIETA_CENA }
+    ]}
+  ],
+  suplementacion: [
+    { nombre:'Proteína (ISO XP / ISOLATE / ISO COOL / ISO 100)', detalle:'1 scoop post entreno. Según indique la dieta.' },
+    { nombre:'Creatina monohidrato', detalle:'1 scoop (5g) post entreno junto a la proteína. Los días sin entreno: 1 scoop (5g) junto a la bebida del desayuno.' },
+    { nombre:'Melatonina', detalle:'1 toma, 40 min antes de dormir.' },
+    { nombre:'Omega 3', detalle:'1 cápsula después del almuerzo. 1 cápsula después de la cena.' }
+  ],
+  recomendaciones: [
+    "Peso de pulpa de carne en presas de pollo: Pechuga 120-140g · Pierna 70-80g · Pierna con encuentro 100-120g · Ala 40-60g.",
+    "El tamaño de la palma de la mano abierta equivale a un filete de 100g de carne (res, pollo o pescado).",
+    "Usar aceite de oliva en las ensaladas según las indicaciones de la dieta. Comprar el que venga en envase oscuro.",
+    "Seguir lo más posible las porciones y cantidades indicadas para mejores resultados.",
+    "Tomar mínimo 2.5 litros de líquido al día.",
+    "En ensaladas crudas o sancochadas usar solo limón, sal, pimienta y aceite de oliva.",
+    "En todas las preparaciones con carne (pollo, res, pavita, cerdo o pescado) usar solo la pulpa, sin hueso ni piel.",
+    "El yogur y el queso deben ser descremados (light), de preferencia “Sbelt” de Laive.",
+    "Máximo 4 sobres o pastillas de Stevia al día.",
+    "Usar las cantidades indicadas en gramos por cada alimento. Ideal tener una balanza casera.",
+    "1 taza equivale a 250ml.",
+    "Si no puedes preparar el almuerzo indicado, consume alimentos con las mismas características (carnes, ensaladas, carbohidratos).",
+    "Puedes intercambiar los tipos de carne en cualquier preparación (pollo, pavita, etc).",
+    "Desayunos, almuerzos, cenas y meriendas de cualquier día pueden intercambiarse entre sí (ej. usar el almuerzo del martes el día viernes).",
+    "Para bebidas, de preferencia tomar las indicadas; si no, reemplazar por la misma cantidad de agua mineral.",
+    "Si te saltas una comida (no recomendado), continúa con la siguiente.",
+    "Ir a dormir mínimo 1-2 horas después de cenar."
+  ]
+};
+
 function loadData(){
+  let d = { rutinas: [], sesiones: [] };
   try{
     const raw = localStorage.getItem(STORE_KEY);
-    if(raw) return JSON.parse(raw);
+    if(raw) d = JSON.parse(raw);
   }catch(e){}
-  return { rutinas: [], sesiones: [] };
+  if(!d.medidas) d.medidas = MEDIDAS_SEED.slice();
+  return d;
 }
 function saveData(){
   localStorage.setItem(STORE_KEY, JSON.stringify(data));
@@ -41,17 +167,22 @@ function fmtDate(iso){
 
 // ---------- Navegación ----------
 let currentView = 'hoy';
+let saludTab = 'medidas';
 function switchView(v){
   currentView = v;
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
-  document.getElementById('fab').style.display = (v==='rutinas') ? 'flex' : 'none';
+  render();
+}
+function switchSaludTab(t){
+  saludTab = t;
   render();
 }
 
 function onFab(){
   if(currentView==='rutinas') openRutinaForm();
+  if(currentView==='salud' && saludTab==='medidas') openMedidaForm();
 }
 
 // ---------- Toast ----------
@@ -540,6 +671,235 @@ function drawChart(points){
   ctx.fillText(fmtDate(points[points.length-1].fecha).replace(/ de \d+$/,''), padL+w, cssH-6);
 }
 
+// ---------- SALUD: Medidas y Dieta ----------
+const MEDIDAS_METRICAS = [
+  { key:'peso', label:'Peso (kg)' },
+  { key:'pctGrasa', label:'% masa grasa' },
+  { key:'pctMusculo', label:'% masa muscular' },
+  { key:'cintura', label:'Cintura (cm)' },
+  { key:'cadera', label:'Cadera (cm)' },
+  { key:'brazoFlexionado', label:'Brazo flexionado (cm)' }
+];
+let medidaMetricaSel = 'peso';
+
+function renderSalud(){
+  document.querySelectorAll('#view-salud .chip').forEach(c=>c.classList.remove('selected'));
+  const activeChip = document.getElementById('saludTab-'+saludTab);
+  if(activeChip) activeChip.classList.add('selected');
+  const cont = document.getElementById('saludContent');
+  cont.innerHTML = saludTab==='medidas' ? htmlMedidas() : htmlDieta();
+  if(saludTab==='medidas'){
+    const sel = document.getElementById('medidaMetricaSelect');
+    if(sel){
+      sel.value = medidaMetricaSel;
+      sel.onchange = ()=>{ medidaMetricaSel = sel.value; drawMedidaChart(); };
+    }
+    drawMedidaChart();
+  }
+}
+
+function htmlMedidas(){
+  const lista = data.medidas.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  return `
+    <div class="card">
+      <label>Ver evolución de</label>
+      <select id="medidaMetricaSelect">
+        ${MEDIDAS_METRICAS.map(m=>`<option value="${m.key}">${m.label}</option>`).join('')}
+      </select>
+      <canvas id="medidaChart" height="180" style="margin-top:10px"></canvas>
+    </div>
+    <div class="card">
+      <h3>Rangos de referencia</h3>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.8">
+        % grasa — Normalidad: 10-15% · Ideal: 5-10%<br>
+        % masa muscular — Normalidad: 40-45% · Ideal: 45-50%<br>
+        Σ 6 pliegues — Normalidad: 34-116 · Ideal: 34-53
+      </div>
+    </div>
+    <div class="card"><h3>Evaluaciones (${lista.length})</h3>
+      ${lista.map(m=>`
+        <div class="list-item" style="align-items:flex-start;cursor:pointer" onclick="openMedidaForm('${m.id}')">
+          <div>
+            <div class="name">${fmtDate(m.fecha)}</div>
+            <div class="meta">Peso ${m.peso}kg · Cintura ${m.cintura}cm · %grasa ${m.pctGrasa}% · %músculo ${m.pctMusculo}%</div>
+          </div>
+          <button class="iconbtn" onclick="event.stopPropagation();deleteMedida('${m.id}')">🗑️</button>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+function drawMedidaChart(){
+  const canvas = document.getElementById('medidaChart');
+  if(!canvas) return;
+  const points = data.medidas.slice()
+    .filter(m=>m[medidaMetricaSel]!==undefined && m[medidaMetricaSel]!==null && m[medidaMetricaSel]!=='')
+    .sort((a,b)=>a.fecha.localeCompare(b.fecha))
+    .map(m=>({ fecha:m.fecha, valor: parseFloat(m[medidaMetricaSel]) }));
+  drawGenericLineChart(canvas, points);
+}
+
+function drawGenericLineChart(canvas, points){
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || 320, cssH = 180;
+  canvas.width = cssW*dpr; canvas.height = cssH*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cssW,cssH);
+  if(points.length===0){
+    ctx.fillStyle='#8b93a3'; ctx.font='13px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Sin datos suficientes', cssW/2, cssH/2);
+    return;
+  }
+  const padL=44, padR=10, padT=14, padB=24;
+  const w = cssW-padL-padR, h = cssH-padT-padB;
+  const values = points.map(p=>p.valor);
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = (max-min)||1;
+  const yFor = v => padT + h - ((v-min)/range)*h;
+  const xFor = i => padL + (points.length===1? w/2 : (i/(points.length-1))*w);
+
+  ctx.strokeStyle = '#2a2f3a';
+  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+h); ctx.lineTo(padL+w,padT+h); ctx.stroke();
+  ctx.fillStyle = '#8b93a3'; ctx.font='10px sans-serif'; ctx.textAlign='right';
+  ctx.fillText(max.toFixed(1), padL-4, yFor(max)+3);
+  ctx.fillText(min.toFixed(1), padL-4, yFor(min)+3);
+
+  ctx.strokeStyle = '#39d98a'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  points.forEach((p,i)=>{ const x=xFor(i), y=yFor(p.valor); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  ctx.stroke();
+  points.forEach((p,i)=>{
+    const x=xFor(i), y=yFor(p.valor);
+    ctx.fillStyle='#39d98a'; ctx.beginPath(); ctx.arc(x,y,4,0,7); ctx.fill();
+  });
+  ctx.fillStyle='#8b93a3'; ctx.textAlign='left';
+  ctx.fillText(fmtDate(points[0].fecha).split(' ').slice(0,2).join(' '), padL, cssH-6);
+  ctx.textAlign='right';
+  ctx.fillText(fmtDate(points[points.length-1].fecha).split(' ').slice(0,2).join(' '), padL+w, cssH-6);
+}
+
+function medidaField(id, label, val){
+  return `<div class="field">
+    <label>${label}</label>
+    <input id="${id}" type="number" step="0.1" value="${val!==undefined && val!==null ? val : ''}">
+  </div>`;
+}
+function openMedidaForm(medidaId){
+  const m = medidaId ? data.medidas.find(x=>x.id===medidaId) : null;
+  openModal(`
+    <button class="close-x" onclick="closeModal()">✕</button>
+    <h3>${m? 'Editar evaluación' : 'Nueva evaluación'}</h3>
+    ${medidaField('medFecha','Fecha', m?m.fecha:todayISO()).replace('type="number" step="0.1"','type="date"')}
+    <div class="grid2">
+      ${medidaField('medPeso','Peso (kg)', m?.peso)}
+      ${medidaField('medTalla','Talla (cm)', m?.talla)}
+    </div>
+    <h3 style="margin-top:14px">Perímetros corporales (cm)</h3>
+    <div class="grid2">
+      ${medidaField('medBrazoRelajado','Brazo relajado', m?.brazoRelajado)}
+      ${medidaField('medBrazoFlexionado','Brazo flexionado', m?.brazoFlexionado)}
+      ${medidaField('medAntebrazo','Antebrazo', m?.antebrazo)}
+      ${medidaField('medTorax','Tórax', m?.torax)}
+      ${medidaField('medCintura','Cintura', m?.cintura)}
+      ${medidaField('medCadera','Cadera', m?.cadera)}
+      ${medidaField('medMusloMedio','Muslo medio', m?.musloMedio)}
+      ${medidaField('medPantorrilla','Pantorrilla', m?.pantorrilla)}
+    </div>
+    <h3 style="margin-top:14px">Pliegues de grasa (mm)</h3>
+    <div class="grid2">
+      ${medidaField('medPlTriceps','Tríceps', m?.plTriceps)}
+      ${medidaField('medPlSubescapula','Subescápula', m?.plSubescapula)}
+      ${medidaField('medPlSupraespinal','Supraespinal', m?.plSupraespinal)}
+      ${medidaField('medPlAbdominal','Abdominal', m?.plAbdominal)}
+      ${medidaField('medPlMuslo','Muslo', m?.plMuslo)}
+      ${medidaField('medPlPantorrilla','Pantorrilla', m?.plPantorrilla)}
+    </div>
+    <h3 style="margin-top:14px">Composición corporal</h3>
+    <div class="grid2">
+      ${medidaField('medPctGrasa','% masa grasa', m?.pctGrasa)}
+      ${medidaField('medKgGrasa','Kg de grasa', m?.kgGrasa)}
+      ${medidaField('medPctMusculo','% masa muscular', m?.pctMusculo)}
+      ${medidaField('medKgMusculo','Kg de músculo', m?.kgMusculo)}
+    </div>
+    <button class="btn block" style="margin-top:10px" onclick="saveMedida('${m?m.id:''}')">${m?'Guardar cambios':'Guardar evaluación'}</button>
+    ${m?`<button class="btn danger block" style="margin-top:8px" onclick="deleteMedida('${m.id}')">Eliminar evaluación</button>`:''}
+  `);
+}
+function saveMedida(id){
+  const val = fid => { const v = document.getElementById(fid).value; return v===''? undefined : parseFloat(v); };
+  const fecha = document.getElementById('medFecha').value;
+  if(!fecha){ toast('Selecciona una fecha'); return; }
+  const registro = {
+    id: id || uid(), fecha,
+    peso: val('medPeso'), talla: val('medTalla'),
+    brazoRelajado: val('medBrazoRelajado'), brazoFlexionado: val('medBrazoFlexionado'),
+    antebrazo: val('medAntebrazo'), torax: val('medTorax'), cintura: val('medCintura'),
+    cadera: val('medCadera'), musloMedio: val('medMusloMedio'), pantorrilla: val('medPantorrilla'),
+    plTriceps: val('medPlTriceps'), plSubescapula: val('medPlSubescapula'),
+    plSupraespinal: val('medPlSupraespinal'), plAbdominal: val('medPlAbdominal'),
+    plMuslo: val('medPlMuslo'), plPantorrilla: val('medPlPantorrilla'),
+    pctGrasa: val('medPctGrasa'), kgGrasa: val('medKgGrasa'),
+    pctMusculo: val('medPctMusculo'), kgMusculo: val('medKgMusculo')
+  };
+  if(id){
+    const idx = data.medidas.findIndex(x=>x.id===id);
+    data.medidas[idx] = registro;
+  }else{
+    data.medidas.push(registro);
+  }
+  saveData();
+  closeModal();
+  toast('Evaluación guardada');
+  render();
+}
+function deleteMedida(id){
+  if(!confirm('¿Eliminar esta evaluación?')) return;
+  data.medidas = data.medidas.filter(x=>x.id!==id);
+  saveData();
+  closeModal();
+  render();
+}
+
+let dietaEscenarioSel = 'entreno_tarde';
+function htmlDieta(){
+  const esc = DIETA.escenarios.find(e=>e.id===dietaEscenarioSel) || DIETA.escenarios[0];
+  return `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 style="margin:0">Plan actual</h3>
+        <span class="pill">versión ${DIETA.version}</span>
+      </div>
+      <div class="chip-row" style="margin-top:10px">
+        ${DIETA.escenarios.map(e=>`<button class="chip ${e.id===dietaEscenarioSel?'selected':''}" onclick="setDietaEscenario('${e.id}')">${e.nombre} (${e.kcal}kcal)</button>`).join('')}
+      </div>
+    </div>
+    ${esc.comidas.map(c=>`
+      <div class="card">
+        <h3>${escapeHtml(c.nombre)}</h3>
+        ${c.opciones.map((op,i)=>`<div class="ex-item"><strong>Opción ${i+1}:</strong> ${escapeHtml(op)}</div>`).join('')}
+      </div>
+    `).join('')}
+    <div class="card">
+      <h3>💊 Suplementación</h3>
+      ${DIETA.suplementacion.map(s=>`<div class="ex-item"><strong>${escapeHtml(s.nombre)}:</strong> ${escapeHtml(s.detalle)}</div>`).join('')}
+    </div>
+    <div class="card">
+      <h3>Recomendaciones generales</h3>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.9">
+        ${DIETA.recomendaciones.map(r=>`• ${escapeHtml(r)}`).join('<br>')}
+      </div>
+    </div>
+    <div class="card" style="color:var(--muted);font-size:12px;text-align:center">
+      Cuando tu nutricionista te dé una versión nueva de la dieta, compártemela y la actualizo aquí.
+    </div>
+  `;
+}
+function setDietaEscenario(id){
+  dietaEscenarioSel = id;
+  render();
+}
+
 // ---------- Backup ----------
 function exportBackup(){
   const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
@@ -589,7 +949,9 @@ function render(){
   if(currentView==='hoy') renderHoy();
   if(currentView==='rutinas') renderRutinas();
   if(currentView==='historial') renderHistorial();
-  document.getElementById('fab').style.display = (currentView==='rutinas') ? 'flex' : 'none';
+  if(currentView==='salud') renderSalud();
+  const fabVisible = currentView==='rutinas' || (currentView==='salud' && saludTab==='medidas');
+  document.getElementById('fab').style.display = fabVisible ? 'flex' : 'none';
 }
 
 // ---------- Service worker (offline) ----------

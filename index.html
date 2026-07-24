@@ -132,6 +132,15 @@ select option{background:var(--card2);}
       <div class="card"><h3>Historial de sesiones</h3><div id="sesionesList"></div></div>
     </div>
 
+    <!-- SALUD -->
+    <div class="view" id="view-salud">
+      <div class="chip-row" style="margin-bottom:12px">
+        <button class="chip" id="saludTab-medidas" onclick="switchSaludTab('medidas')">Medidas</button>
+        <button class="chip" id="saludTab-dieta" onclick="switchSaludTab('dieta')">Dieta</button>
+      </div>
+      <div id="saludContent"></div>
+    </div>
+
     <!-- AJUSTES -->
     <div class="view" id="view-ajustes">
       <div class="card">
@@ -168,6 +177,10 @@ select option{background:var(--card2);}
     <button class="tab-btn" data-view="historial" onclick="switchView('historial')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
       Progreso
+    </button>
+    <button class="tab-btn" data-view="salud" onclick="switchView('salud')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 10-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
+      Salud
     </button>
     <button class="tab-btn" data-view="ajustes" onclick="switchView('ajustes')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>
