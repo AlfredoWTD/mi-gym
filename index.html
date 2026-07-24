@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>Mi Gym</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{
+  --bg:#0f1115; --card:#181b22; --card2:#1f2430; --border:#2a2f3a;
+  --text:#eef0f4; --muted:#8b93a3; --accent:#5b8cff; --accent2:#39d98a;
+  --danger:#ff5d6c; --radius:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  height:100%;overflow-x:hidden;}
+#app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;
+  padding-bottom:76px;}
+header.top{position:sticky;top:0;z-index:10;background:rgba(15,17,21,.92);
+  backdrop-filter:blur(8px);padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+header.top h1{margin:0;font-size:19px;font-weight:700;display:flex;align-items:center;gap:8px}
+header.top .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+main{flex:1;padding:12px 14px 24px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;margin-bottom:12px;}
+.card h3{margin:0 0 8px;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 14px;
+  font-size:14px;font-weight:600;cursor:pointer;}
+.btn.secondary{background:var(--card2);color:var(--text);border:1px solid var(--border);}
+.btn.danger{background:var(--danger);}
+.btn.ghost{background:transparent;color:var(--accent);padding:6px 8px;}
+.btn:active{transform:scale(.97);}
+.btn.block{width:100%;}
+.row{display:flex;gap:8px;align-items:center;}
+input,select{background:var(--card2);border:1px solid var(--border);color:var(--text);
+  border-radius:10px;padding:10px 12px;font-size:14px;width:100%;}
+input:focus,select:focus{outline:1px solid var(--accent);}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px;}
+.field{margin-bottom:10px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.list-item{display:flex;justify-content:space-between;align-items:center;
+  padding:12px;background:var(--card2);border-radius:10px;margin-bottom:8px;
+  border:1px solid var(--border);}
+.list-item .name{font-weight:600;font-size:14.5px}
+.list-item .meta{font-size:12px;color:var(--muted);margin-top:2px}
+.pill{font-size:11px;background:#2a2f3a;color:var(--muted);padding:2px 8px;border-radius:20px;}
+nav.tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(24,27,34,.96);
+  backdrop-filter:blur(10px);border-top:1px solid var(--border);
+  display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+  max-width:480px;margin:0 auto;z-index:20;}
+nav.tabbar button{background:none;border:none;color:var(--muted);font-size:11px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 10px;cursor:pointer;}
+nav.tabbar button.active{color:var(--accent);}
+nav.tabbar button svg{width:22px;height:22px;}
+.view{display:none;}
+.view.active{display:block;}
+.empty{text-align:center;color:var(--muted);padding:40px 10px;font-size:14px;}
+.set-row{display:grid;grid-template-columns:28px 1fr 1fr 1fr 32px;gap:6px;align-items:center;margin-bottom:6px;}
+.set-row .idx{color:var(--muted);font-size:12px;text-align:center;}
+.iconbtn{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;}
+.fab{position:fixed;bottom:86px;right:16px;width:52px;height:52px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;font-size:26px;box-shadow:0 4px 14px rgba(0,0,0,.4);
+  cursor:pointer;z-index:15;max-width:480px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:none;
+  align-items:flex-end;justify-content:center;}
+.modal-bg.active{display:flex;}
+.modal{background:var(--card);width:100%;max-width:480px;border-radius:18px 18px 0 0;
+  padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto;}
+.modal h3{margin-top:0;}
+.close-x{float:right;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--card2);
+  border:1px solid var(--border);padding:10px 16px;border-radius:20px;font-size:13px;
+  z-index:50;opacity:0;transition:opacity .25s;pointer-events:none;}
+.toast.show{opacity:1;}
+canvas{width:100%!important;max-width:100%;}
+.ex-item{border-bottom:1px solid var(--border);padding:10px 0;}
+.ex-item:last-child{border-bottom:none;}
+select option{background:var(--card2);}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.chip{background:var(--card2);border:1px solid var(--border);border-radius:20px;
+  padding:6px 12px;font-size:12.5px;cursor:pointer;color:var(--text);}
+.chip.selected{background:var(--accent);border-color:var(--accent);color:#fff;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="top">
+    <h1>🏋️ Mi Gym</h1>
+    <div class="sub" id="headerSub">Seguimiento personal de rutinas</div>
+  </header>
+
+  <main>
+    <!-- HOY -->
+    <div class="view active" id="view-hoy">
+      <div class="card" id="hoyRutinaCard"></div>
+      <div id="hoySesion"></div>
+    </div>
+
+    <!-- RUTINAS -->
+    <div class="view" id="view-rutinas">
+      <div id="rutinasList"></div>
+      <div class="empty" id="rutinasEmpty" style="display:none">Aún no tienes rutinas.<br>Toca + para crear una.</div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="view" id="view-historial">
+      <div class="card">
+        <label>Ver progreso de ejercicio</label>
+        <select id="progressExSelect"></select>
+      </div>
+      <div class="card" id="progressCard" style="display:none">
+        <h3>Peso máximo por sesión</h3>
+        <canvas id="progressChart" height="180"></canvas>
+      </div>
+      <div class="card"><h3>Historial de sesiones</h3><div id="sesionesList"></div></div>
+    </div>
+
+    <!-- AJUSTES -->
+    <div class="view" id="view-ajustes">
+      <div class="card">
+        <h3>Backup</h3>
+        <p style="color:var(--muted);font-size:13px;margin-top:0">
+          Tus datos se guardan solo en este celular. Exporta seguido para no perder tu progreso.
+        </p>
+        <button class="btn block" onclick="exportBackup()">⬇️ Exportar backup (.json)</button>
+        <div style="height:8px"></div>
+        <label>Restaurar backup</label>
+        <input type="file" id="importFile" accept="application/json">
+      </div>
+      <div class="card">
+        <h3>Datos</h3>
+        <button class="btn danger block" onclick="resetAll()">🗑️ Borrar todos los datos</button>
+      </div>
+      <div class="card" style="color:var(--muted);font-size:12px;text-align:center">
+        Mi Gym · datos 100% locales · v1.0
+      </div>
+    </div>
+  </main>
+
+  <button class="fab" id="fab" onclick="onFab()">+</button>
+
+  <nav class="tabbar">
+    <button class="tab-btn active" data-view="hoy" onclick="switchView('hoy')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+      Hoy
+    </button>
+    <button class="tab-btn" data-view="rutinas" onclick="switchView('rutinas')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>
+      Rutinas
+    </button>
+    <button class="tab-btn" data-view="historial" onclick="switchView('historial')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+      Progreso
+    </button>
+    <button class="tab-btn" data-view="ajustes" onclick="switchView('ajustes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>
+      Ajustes
+    </button>
+  </nav>
+
+</div>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalContent"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
