@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#0f1115">
 <title>Mi Gym</title>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon.svg">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
@@ -112,6 +112,15 @@ select option{background:var(--card2);}
 
     <!-- HISTORIAL -->
     <div class="view" id="view-historial">
+      <div id="streakCard"></div>
+      <div class="card" id="volumeCard" style="display:none">
+        <h3>Volumen por sesión</h3>
+        <canvas id="volumeChart" height="180"></canvas>
+      </div>
+      <div class="card" id="prsCard" style="display:none">
+        <h3>🏆 Récords personales</h3>
+        <div id="prsList"></div>
+      </div>
       <div class="card">
         <label>Ver progreso de ejercicio</label>
         <select id="progressExSelect"></select>
